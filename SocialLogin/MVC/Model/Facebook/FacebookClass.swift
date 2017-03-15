@@ -11,15 +11,9 @@ import FacebookCore
 import FacebookLogin
 
 
-typealias FBSuccessHandler = (_ success:AnyObject) -> Void
-typealias FBFailHandler = (_ success:AnyObject) -> Void
-
-
 class FacebookClass: NSObject {
     
     var vc: UIViewController!
-    var loginFail: FBFailHandler?
-    var loginSucess: FBSuccessHandler?
     
     public static let `default` = FacebookClass()
     
@@ -55,35 +49,41 @@ class FacebookClass: NSObject {
         }
     }
     
-    func loginWithFacebook(viewController: UIViewController, successHandler: @escaping FBSuccessHandler, failHandler: @escaping FBFailHandler) {
+    func loginWithFacebook(viewController: UIViewController, successHandler: @escaping (_ success:AnyObject) -> (), failHandler: @escaping (_ failure:AnyObject) -> ()) {
 
         vc = viewController
-        loginFail = failHandler
-        loginSucess = successHandler
         
         if(Reachability.isNetworkAvailable()) {
             
             if(AccessToken.current == nil) {
                 facebookAccessToken(vc, completion: { (token, error) in
                     if let err = error {
-                        self.loginFail!(err.localizedDescription as AnyObject)
+                        failHandler(err.localizedDescription as AnyObject)
                     } else {
                         if let token = token {
                             AccessToken.current = token
-                            self.getUserInfoFromFB()
+                            self.getUserInfoFromFB(successHandler: { (response) in
+                                successHandler(response)
+                            }, failHandler: { (error) in
+                                failHandler(error)
+                            })
                         }
                     }
                 })
             }
             else {
                 //AccessToken.current = strToken
-                self.getUserInfoFromFB()
+                self.getUserInfoFromFB(successHandler: { (response) in
+                    successHandler(response)
+                }, failHandler: { (error) in
+                    failHandler(error)
+                })
             }
             
         }
         else {
             print("No internet Connection.")
-            self.loginFail!("No internet Connection." as AnyObject)
+            failHandler("No internet Connection." as AnyObject)
         }
     }
     
@@ -108,15 +108,15 @@ class FacebookClass: NSObject {
         }
     }
     
-    func getUserInfoFromFB() {
+    func getUserInfoFromFB(successHandler: @escaping (_ success:AnyObject) -> (), failHandler: @escaping (_ failure:AnyObject) -> ()) {
         
         let params = ["fields":"cover,picture.type(large),id,name,first_name,last_name,gender,birthday,email,location,hometown"]
         graphRequest(for: "me", with: params) { (response, error) in
             if let err = error {
-                self.loginFail!(err.localizedDescription as AnyObject)
+                failHandler(err.localizedDescription as AnyObject)
             } else {
                 if let resp = response {
-                    self.loginSucess!(resp)
+                    successHandler(resp)
                 }
             }
         }
@@ -125,11 +125,9 @@ class FacebookClass: NSObject {
     
     //MARK: - Get List Of Facebook Friends
     
-    func getFacebookFriends(viewController: UIViewController, successHandler: @escaping FBSuccessHandler, failHandler: @escaping FBFailHandler) {
+    func getFacebookFriends(viewController: UIViewController, successHandler: @escaping (_ success:AnyObject) -> (), failHandler: @escaping (_ failure:AnyObject) -> ()) {
         
         vc = viewController
-        loginFail = failHandler
-        loginSucess = successHandler
 
         if(Reachability.isNetworkAvailable()) {
             
@@ -137,34 +135,42 @@ class FacebookClass: NSObject {
                 
                 facebookAccessToken(vc, completion: { (token, error) in
                     if let err = error {
-                        self.loginFail!(err.localizedDescription as AnyObject)
+                        failHandler(err.localizedDescription as AnyObject)
                     } else {
                         if let token = token {
                             AccessToken.current = token
-                            self.getUserFacebookFriendsFromFB()
+                            self.getUserFacebookFriendsFromFB(successHandler: { (response) in
+                                successHandler(response)
+                            }, failHandler: { (error) in
+                                failHandler(error)
+                            })
                         }
                     }
                 })
             }
             else {
-                self.getUserFacebookFriendsFromFB()
+                self.getUserFacebookFriendsFromFB(successHandler: { (response) in
+                    successHandler(response)
+                }, failHandler: { (error) in
+                    failHandler(error)
+                })
             }
         }
         else {
             print("No internet Connection.")
-            self.loginFail!("No internet Connection." as AnyObject)
+            failHandler("No internet Connection." as AnyObject)
         }
     }
     
-    func getUserFacebookFriendsFromFB() {
+    func getUserFacebookFriendsFromFB(successHandler: @escaping (_ success:AnyObject) -> (), failHandler: @escaping (_ failure:AnyObject) -> ()) {
         
         let params = ["fields":"cover,picture.type(large),id,name,first_name,last_name,gender,birthday,email,location,hometown"]
         graphRequest(for: "me/friends", with: params) { (response, error) in
             if let err = error {
-                self.loginFail!(err.localizedDescription as AnyObject)
+                failHandler(err.localizedDescription as AnyObject)
             } else {
                 if let resp = response {
-                    self.loginSucess!(resp)
+                    successHandler(resp)
                 }
             }
         }
