@@ -33,7 +33,7 @@ class FacebookVC: UIViewController {
             self.activity.isHidden = false
             self.btnFacebookLogin.isHidden = true
             
-            FacebookClass.sharedInstance().loginWithFacebook(viewController: self, successHandler: { (response) in
+            FacebookClass.default.loginWithFacebook(viewController: self, successHandler: { (response) in
                 self.activity.isHidden = true
                 self.btnFacebookLogin.isHidden = false
                 self.btnFacebookLogin.tag = 1
@@ -47,7 +47,7 @@ class FacebookVC: UIViewController {
             
         }
         else {//Logout from facebook
-            FacebookClass.sharedInstance().logoutFromFacebook()
+            FacebookClass.default.logoutFromFacebook()
             self.btnFacebookFriends.isHidden = true
             btnFacebookLogin.setTitle("Login", for: .normal)
             btnFacebookLogin.tag = 0
@@ -59,7 +59,7 @@ class FacebookVC: UIViewController {
         self.activityFriends.isHidden = false
         self.btnFacebookFriends.isHidden = true
         
-        FacebookClass.sharedInstance().getFacebookFriends(viewController: self, successHandler: { (response) in
+        FacebookClass.default.getFacebookFriends(viewController: self, successHandler: { (response) in
             self.activityFriends.isHidden = true
             self.btnFacebookFriends.isHidden = false
             
